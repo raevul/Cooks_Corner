@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Cooks Corner API
+  version: 1.0.0
+  description: "В проекте реализованы: регистрация, авторизация, профиль автора, выход\
+    \ из системы и редактирование профиля\n                      Просмотр всех рецептов,\
+    \ поиск и фильтрация рецептов, детальная страница рецепта,\n                 \
+    \     а также добавление, изменение и удаление рецепта.\n                    "
+paths:
+  /profile/:
+    get:
+      operationId: profile_retrieve
+      tags:
+      - profile
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /recipes/:
+    get:
+      operationId: recipes_retrieve
+      tags:
+      - recipes
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: recipes_create
+      tags:
+      - recipes
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /recipes/{recipe_id}/:
+    get:
+      operationId: recipes_retrieve_2
+      parameters:
+      - in: path
+        name: recipe_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - recipes
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: recipes_update
+      parameters:
+      - in: path
+        name: recipe_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - recipes
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: recipes_destroy
+      parameters:
+      - in: path
+        name: recipe_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - recipes
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /register/:
+    post:
+      operationId: register_create
+      tags:
+      - register
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
