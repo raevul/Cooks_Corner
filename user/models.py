@@ -16,7 +16,7 @@ class AuthorProfile(models.Model):
     name = models.CharField(max_length=50)
     bio = models.TextField(max_length=250, null=True)
     email = models.EmailField(unique=True)
-    image = models.FileField("Author image", upload_to="Author image")
+    image = models.FileField("Author image", upload_to="Author image", null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="author")
 
     def __str__(self):

@@ -4,11 +4,14 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 
 from .models import AuthorProfile
+from .permissions import CurrentUserOrAdminOrReadOnly
 from .serializers import (AuthorProfileSerializer, RegisterSerializer, LoginSerializer,
                           LogoutSerializer, AddAuthorProfileSerializer)
 
 
 class AuthorProfileAPIView(views.APIView):
+    permission_classes = [CurrentUserOrAdminOrReadOnly]
+
     def get(self, request, *args, **kwargs):
         try:
             author = AuthorProfile.objects.get(user=request.user)
@@ -41,12 +44,18 @@ class AuthorProfileAPIView(views.APIView):
 
 
 class RegisterAPIView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request, *args, **kwargs):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             author = serializer.save()
             token, created = Token.objects.get_or_create(user=author)
-            return Response({"token": token.key}, status=status.HTTP_201_CREATED)
+            content = {
+                "data": "Вы успешно зарегистрировались",
+                "token": token.key
+            }
+            return Response(content, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -71,6 +80,8 @@ class LoginAPIView(views.APIView):
 
 
 class LogoutAPIView(views.APIView):
+    permission_classes = [CurrentUserOrAdminOrReadOnly]
+
     serializer = LogoutSerializer()
 
     def get(self, request, *args, **kwargs):

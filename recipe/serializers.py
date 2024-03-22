@@ -1,46 +1,41 @@
 from rest_framework import serializers
 
-from user.serializers import AuthorProfileSerializer
-from .models import Category, Recipe, Ingredient
+from user.models import AuthorProfile
+from .models import Recipe
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class AuthorProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
-        fields = ['id', 'title']
-
-
-class IngredientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ingredient
-        fields = ['title', 'unit']
+        model = AuthorProfile
+        fields = ['id']
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
-        fields = ['title', 'image', 'author']
+        fields = ['id', 'title', 'image']
 
 
 class RecipeDetailSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
-    # ingredient = IngredientSerializer(many=True)
+    author = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Recipe
         fields = ['id', 'title', 'image', 'time', 'description',
-                  'author', 'difficulty', 'category', 'ingredient']
+                  'author', 'difficulty', 'category', 'ingredients']
 
-    # def create(self, validated_data):
-    #     request = self.context.get('request')
-    #     validated_data['author'] = request.user
-    #
-    #     category = validated_data.pop("category")
-    #     ingredients_data = validated_data.pop("ingredient")
-    #
-    #     recipe = Recipe.objects.create(category=category, **validated_data)
-    #
-    #     for ingredient_data in ingredients_data:
-    #         ingredient, created = Ingredient.objects.get_or_create(**ingredient_data)
-    #         recipe.ingredients.add(ingredient)
-    #     return recipe
+    def create(self, validated_data):
+        author_profile = self.context['request'].user.author
+        validated_data['author'] = author_profile
+        return Recipe.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.image = validated_data.get('image', instance.image)
+        instance.time = validated_data.get('time', instance.time)
+        instance.description = validated_data.get('description', instance.description)
+        instance.category = validated_data.get('category', instance.category)
+        instance.ingredients = validated_data.get('ingredients', instance.ingredients)
+        instance.difficulty = validated_data.get('difficulty', instance.difficulty)
+        instance.save()
+        return instance

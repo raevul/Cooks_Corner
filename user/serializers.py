@@ -3,17 +3,19 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from recipe.serializers import RecipeSerializer
 from .models import AuthorProfile
 
 
 class AuthorProfileSerializer(serializers.ModelSerializer):
+    recipes = RecipeSerializer(many=True, read_only=True)
+
     class Meta:
         model = AuthorProfile
-        fields = '__all__'
+        fields = ['id', 'name', 'image', 'bio', 'recipes']
 
 
 class AddAuthorProfileSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=50)
     image = serializers.ImageField()
     bio = serializers.CharField(max_length=250, write_only=True)
 
@@ -21,7 +23,6 @@ class AddAuthorProfileSerializer(serializers.Serializer):
         return AuthorProfile.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get("name", instance.name)
         instance.image = validated_data.get("image", instance.image)
         instance.bio = validated_data.get("bio", instance.bio)
         instance.save()
