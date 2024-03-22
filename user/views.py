@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views, status, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -12,6 +14,16 @@ from .serializers import (AuthorProfileSerializer, RegisterSerializer, LoginSeri
 class AuthorProfileAPIView(views.APIView):
     permission_classes = [CurrentUserOrAdminOrReadOnly]
 
+    @swagger_auto_schema(
+        tags=['Author'],
+        operation_description="Эндпоинт для просмотра профиля автора. Автор может изменять свои данные",
+        responses={
+            200: AuthorProfileSerializer,
+            401: "Неверные учетные данные",
+            404: "Профиль не найден",
+            500: "Ошибка сервера"
+        }
+    )
     def get(self, request, *args, **kwargs):
         try:
             author = AuthorProfile.objects.get(user=request.user)
@@ -46,6 +58,16 @@ class AuthorProfileAPIView(views.APIView):
 class RegisterAPIView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        tags=['Author'],
+        operation_description="Эндпоинт для регистрации",
+        request_body=RegisterSerializer(),
+        responses={
+            201: "Успешное регистрация",
+            400: "Неверный запрос",
+            500: "Ошибка сервера"
+        }
+    )
     def post(self, request, *args, **kwargs):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -61,6 +83,17 @@ class RegisterAPIView(views.APIView):
 
 
 class LoginAPIView(views.APIView):
+
+    @swagger_auto_schema(
+        tags=['Author'],
+        operation_description="Эндпоинт для авторизации",
+        request_body=LoginSerializer(),
+        responses={
+            200: "Успешное авторизация",
+            401: "Неверные учетные данные",
+            500: "Ошибка сервера"
+        }
+    )
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -84,6 +117,15 @@ class LogoutAPIView(views.APIView):
 
     serializer = LogoutSerializer()
 
+    @swagger_auto_schema(
+        tags=['Author'],
+        operation_description="Эндпоинт для выхода из системы",
+        responses={
+            200: "Успешный выход из системы",
+            400: "Неверный запрос",
+            500: "Ошибка сервера"
+        }
+    )
     def get(self, request, *args, **kwargs):
         try:
             request.user.auth_token.delete()

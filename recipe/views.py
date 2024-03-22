@@ -2,6 +2,8 @@ from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from user.models import AuthorProfile
 from .models import Recipe
@@ -12,6 +14,19 @@ from .serializers import RecipeSerializer, RecipeDetailSerializer, AuthorProfile
 class RecipeByCategoryListAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+        tags=['Recipe'],
+        operation_description="Эндпоинт для фильтрации по категориям (префикс/?category=Breakfast)",
+        manual_parameters=[
+            openapi.Parameter('category', openapi.IN_QUERY, type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: RecipeSerializer(many=True),
+            401: "Неверные учетные данные",
+            404: "Рецепт не найден",
+            500: "Ошибка сервера"
+        }
+    )
     def get(self, request, *args, **kwargs):
         try:
             title_param = request.query_params.get('category', 'Breakfast')
@@ -30,6 +45,19 @@ class RecipeSearchAPIView(APIView):
     filter_backends = [SearchFilter]
     search_fields = ['title']
 
+    @swagger_auto_schema(
+        tags=['Recipe'],
+        operation_description="Эндпоинт для поиска рецепта по названию (префикс/?search=Суп)",
+        manual_parameters=[
+            openapi.Parameter('search', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+        ],
+        responses={
+            200: RecipeSerializer(),
+            401: "Неверные учетные данные",
+            404: "Рецепт не найден",
+            500: "Ошибка сервера"
+        }
+    )
     def get(self, request, *args, **kwargs):
         try:
             search_query = request.query_params.get('search', '')
@@ -45,6 +73,19 @@ class AuthorSearchAPIView(APIView):
     filter_backend = [SearchFilter]
     search_fields = ['title']
 
+    @swagger_auto_schema(
+        tags=['Author'],
+        operation_description="Эндпоинт для поиска автора по имени (префикс/?search=Ular)",
+        manual_parameters=[
+            openapi.Parameter('search', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+        ],
+        responses={
+            200: AuthorProfileSerializer(),
+            401: "Неверные учетные данные",
+            404: "Рецепт не найден",
+            500: "Ошибка сервера"
+        }
+    )
     def get(self, request, *args, **kwargs):
         try:
             search_query = request.query_params.get('search', '')
@@ -58,6 +99,29 @@ class AuthorSearchAPIView(APIView):
 class AddRecipeAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+        tags=['Recipe'],
+        operation_description="Эндпоинт для добавления рецепта",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING),
+                'category': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'image': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_BINARY),
+                'time': openapi.Schema(type=openapi.TYPE_STRING),
+                'description': openapi.Schema(type=openapi.TYPE_STRING),
+                'difficulty': openapi.Schema(type=openapi.TYPE_STRING),
+                'ingredients': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER))
+            },
+            required=['title', 'category', 'image', 'time', 'description', 'difficulty', 'ingredients']
+        ),
+        responses={
+            201: "Рецепт успешно создан",
+            401: "Неверные учетные данные",
+            400: "Неверный запрос",
+            500: "Ошибка сервера"
+        }
+    )
     def post(self, request, *args, **kwargs):
         serializer = RecipeDetailSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -70,6 +134,16 @@ class AddRecipeAPIView(APIView):
 class RecipeDetailAPIView(APIView):
     permission_classes = [IsAuthorOrReadOnly]
 
+    @swagger_auto_schema(
+        tags=['Recipe'],
+        operation_description="Эндпоинт для просмотра детальной страницы. Автор может изменить или удалить рецепт",
+        responses={
+            200: RecipeDetailSerializer(),
+            401: "Неверные учетные данные",
+            404: "Рецепт не найден",
+            500: "Ошибка сервера"
+        }
+    )
     def get(self, request, *args, **kwargs):
         try:
             recipe = Recipe.objects.get(id=kwargs['recipe_id'])
