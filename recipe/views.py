@@ -1,4 +1,5 @@
 from rest_framework.filters import SearchFilter
+from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -13,6 +14,7 @@ from .serializers import RecipeSerializer, RecipeDetailSerializer, AuthorProfile
 
 class RecipeByCategoryListAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
         tags=['Recipe'],
@@ -42,6 +44,7 @@ class RecipeByCategoryListAPIView(APIView):
 
 class RecipeSearchAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser]
     filter_backends = [SearchFilter]
     search_fields = ['title']
 
@@ -70,6 +73,7 @@ class RecipeSearchAPIView(APIView):
 
 class AuthorSearchAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser]
     filter_backend = [SearchFilter]
     search_fields = ['title']
 
@@ -98,6 +102,7 @@ class AuthorSearchAPIView(APIView):
 
 class AddRecipeAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
         tags=['Recipe'],
@@ -107,7 +112,7 @@ class AddRecipeAPIView(APIView):
             properties={
                 'title': openapi.Schema(type=openapi.TYPE_STRING),
                 'category': openapi.Schema(type=openapi.TYPE_INTEGER),
-                'image': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_BINARY),
+                'image': openapi.Schema(type=openapi.TYPE_FILE),
                 'time': openapi.Schema(type=openapi.TYPE_STRING),
                 'description': openapi.Schema(type=openapi.TYPE_STRING),
                 'difficulty': openapi.Schema(type=openapi.TYPE_STRING),
@@ -133,6 +138,7 @@ class AddRecipeAPIView(APIView):
 
 class RecipeDetailAPIView(APIView):
     permission_classes = [IsAuthorOrReadOnly]
+    parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
         tags=['Recipe'],

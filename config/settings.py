@@ -21,7 +21,6 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
-#ToDo добавить картинку автора
 
 INSTALLED_APPS = [
     'django.contrib.admin',
